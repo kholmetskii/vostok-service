@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: vostok_db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-vostok}
+      POSTGRES_USER: ${POSTGRES_USER:-vostok}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vostok}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-vostok} -d ${POSTGRES_DB:-vostok}"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build:
+      context: ./backend
+    container_name: vostok_backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-vostok}:${POSTGRES_PASSWORD:-vostok}@db:5432/${POSTGRES_DB:-vostok}
+      CORS_ORIGINS: http://localhost:5173,http://localhost:8080,http://localhost
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: vostok_frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  db_data:
