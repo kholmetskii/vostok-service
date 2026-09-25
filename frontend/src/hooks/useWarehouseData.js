@@ -41,7 +41,7 @@ export function useWarehouseData(warehouseId) {
             setEdges(cfg.edges);
             setObstacles(cfg.obstacles);
 
-            const count = cfg.warehouse?.floors_count ?? 0;
+            const count = cfg.warehouse?.floor_count ?? 0;
             setSelectedLevel((prev) => clampLevel(prev, count));
         } catch (err) {
             setError(err);

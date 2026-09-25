@@ -1,7 +1,7 @@
-from sqlalchemy import (
-    Column, Integer, Float, ForeignKey, UniqueConstraint, CheckConstraint
-)
+from sqlalchemy import CheckConstraint, Column, Float, ForeignKey, Integer, UniqueConstraint
+
 from app.infrastructure.db.base import Base
+
 
 class EdgeModel(Base):
     __tablename__ = "edges"

@@ -5,7 +5,7 @@ function Shelf({ shelf, scale, padding, onClick }) {
     const scaledX = padding + shelf.x * scale;
     const scaledY = padding + shelf.y * scale;
     const scaledWidth = shelf.width * scale;
-    const scaledHeight = shelf.length * scale; // Changed to `length` if shelf has no `height`
+    const scaledHeight = shelf.length * scale;
     const label = `${shelf.shelving_code}:${shelf.section_code}`;
 
     return (
@@ -42,7 +42,7 @@ Shelf.propTypes = {
         x: PropTypes.number.isRequired,
         y: PropTypes.number.isRequired,
         width: PropTypes.number.isRequired,
-        length: PropTypes.number.isRequired, // use 'height' if that's how your model is structured
+        length: PropTypes.number.isRequired,
         shelving_code: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
         section_code: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     }).isRequired,

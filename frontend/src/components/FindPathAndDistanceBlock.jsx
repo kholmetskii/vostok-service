@@ -72,17 +72,13 @@ function FindPathAndDistanceBlock({ warehouseId, shelves, setPath }) {
                 Number(toShelfExtId)
             );
 
-            // Новый формат ответа:
-            // { distance_m: float, path_edges: EdgeOut[] }
             setPath(data.path_edges || []);
             setDistance(
                 typeof data.distance_m === "number" ? data.distance_m.toFixed(3) : ""
             );
         } catch (e) {
-            // минимально: чистим путь и дистанцию
             setPath([]);
             setDistance("");
-            // при желании можно вывести alert или текст ошибки
             console.error(e);
         } finally {
             setLoading(false);

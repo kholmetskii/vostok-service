@@ -1,7 +1,7 @@
-from sqlalchemy import (
-    Column, Integer, ForeignKey, UniqueConstraint, CheckConstraint, Computed
-)
+from sqlalchemy import CheckConstraint, Column, ForeignKey, Integer, UniqueConstraint
+
 from app.infrastructure.db.base import Base
+
 
 class ObstacleModel(Base):
     __tablename__ = "obstacles"

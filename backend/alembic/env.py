@@ -4,10 +4,17 @@ import asyncio
 import os
 from logging.config import fileConfig
 
-from alembic import context
 from dotenv import load_dotenv
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
+
+from alembic import context
+from app.infrastructure.db.base import Base
+from app.infrastructure.db.models.edge import EdgeModel
+from app.infrastructure.db.models.node import NodeModel
+from app.infrastructure.db.models.obstacle import ObstacleModel
+from app.infrastructure.db.models.shelf import ShelfModel
+from app.infrastructure.db.models.warehouse import WarehouseModel
 
 load_dotenv()
 
@@ -22,15 +29,8 @@ config.set_main_option("sqlalchemy.url", db_url)
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# ---- IMPORT METADATA ----
-from app.infrastructure.db.base import Base
-
-# Важно чтобы метадата включала ВСЕ модели, импортни их
-from app.infrastructure.db.models.warehouse import WarehouseModel
-from app.infrastructure.db.models.node import NodeModel
-from app.infrastructure.db.models.shelf import ShelfModel
-from app.infrastructure.db.models.edge import EdgeModel
-from app.infrastructure.db.models.obstacle import ObstacleModel
+# Import every model so Alembic can discover the complete SQLAlchemy metadata.
+_MODELS = (WarehouseModel, NodeModel, ShelfModel, EdgeModel, ObstacleModel)
 
 target_metadata = Base.metadata
 

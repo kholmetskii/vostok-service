@@ -1,5 +1,7 @@
-from sqlalchemy import Column, Integer, Float, String, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, Float, ForeignKey, Integer, String, UniqueConstraint
+
 from app.infrastructure.db.base import Base
+
 
 class ShelfModel(Base):
     __tablename__ = "shelves"
@@ -21,6 +23,4 @@ class ShelfModel(Base):
 
     node_id = Column(Integer, ForeignKey("nodes.id", ondelete="RESTRICT"), nullable=False)
 
-    __table_args__ = (
-        UniqueConstraint("warehouse_id", "ext_id", name="uq_shelves_warehouse_ext"),
-    )
+    __table_args__ = (UniqueConstraint("warehouse_id", "ext_id", name="uq_shelves_warehouse_ext"),)

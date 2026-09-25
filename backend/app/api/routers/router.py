@@ -1,25 +1,31 @@
 from collections.abc import Callable
-from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from starlette.responses import StreamingResponse
 
 from app.api.deps.uow import get_uow_factory
 from app.api.routers.schemas import (
+    FindPathRequest,
+    FindPathResponse,
+    WarehouseConfigIn,
+    WarehouseConfigOut,
     WarehouseCreate,
     WarehouseRead,
-    WarehouseConfigIn,
-    WarehouseConfigOut, FindPathResponse, FindPathRequest,
 )
-from app.application.services.graph_service import GraphService, ShelfNotFound, PathNotFound, WarehouseNotFound
-from app.application.services.warehouse_service import WarehouseService, WarehouseNotFound as WarehouseNotFound_Wh
+from app.application.services.graph_service import (
+    GraphService,
+    PathNotFound,
+    ShelfNotFound,
+    WarehouseNotFound,
+)
+from app.application.services.warehouse_config_service import WarehouseConfigService
 from app.application.services.warehouse_config_service import (
-    WarehouseConfigService,
-    WarehouseNotFound as WarehouseNotFound_Config,
-    ConfigValidationError,
+    WarehouseNotFound as WarehouseConfigNotFound,
 )
+from app.application.services.warehouse_service import WarehouseNotFound as WarehouseServiceNotFound
+from app.application.services.warehouse_service import WarehouseService
+from app.application.validators.warehouse_config_validator import ConfigValidationError
 from app.infrastructure.db.uow import SQLAlchemyUnitOfWork
-
 
 router = APIRouter(prefix="/warehouses", tags=["warehouses"])
 
@@ -27,6 +33,7 @@ router = APIRouter(prefix="/warehouses", tags=["warehouses"])
 # -----------------------
 # Warehouses CRUD
 # -----------------------
+
 
 @router.post(
     "",
@@ -50,13 +57,13 @@ async def create_warehouse(
 
 @router.get(
     "",
-    response_model=List[WarehouseRead],
+    response_model=list[WarehouseRead],
     status_code=status.HTTP_200_OK,
     summary="List warehouses",
 )
 async def list_warehouses(
     uow_factory: Callable[[], SQLAlchemyUnitOfWork] = Depends(get_uow_factory),
-) -> List[WarehouseRead]:
+) -> list[WarehouseRead]:
     service = WarehouseService(uow_factory)
     warehouses = await service.list_warehouses()
     return [WarehouseRead.model_validate(w, from_attributes=True) for w in warehouses]
@@ -76,8 +83,8 @@ async def get_warehouse(
     try:
         warehouse = await service.get_warehouse(warehouse_id)
         return WarehouseRead.model_validate(warehouse, from_attributes=True)
-    except WarehouseNotFound_Wh as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except WarehouseServiceNotFound as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
 
 @router.delete(
@@ -93,8 +100,8 @@ async def delete_warehouse(
     try:
         await service.delete_warehouse(warehouse_id)
         return Response(status_code=status.HTTP_204_NO_CONTENT)
-    except WarehouseNotFound_Wh as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except WarehouseServiceNotFound as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
 
 @router.get(
@@ -111,8 +118,8 @@ async def get_warehouse_config(
     try:
         data = await service.get_config(warehouse_id)
         return WarehouseConfigOut(**data)
-    except WarehouseNotFound_Config as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except WarehouseConfigNotFound as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
 
 @router.put(
@@ -138,10 +145,10 @@ async def replace_warehouse_config(
         await service.replace_config(warehouse_id, payload)
         data = await service.get_config(warehouse_id)
         return WarehouseConfigOut(**data)
-    except WarehouseNotFound_Config as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except ConfigValidationError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except WarehouseConfigNotFound as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ConfigValidationError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
 
 @router.post(
@@ -163,10 +170,10 @@ async def find_distance_between_shelves(
             to_shelf_ext_id=body.to_shelf_ext_id,
         )
         return FindPathResponse(**data)
-    except ShelfNotFound as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except PathNotFound as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except ShelfNotFound as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except PathNotFound as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
 
 @router.get(
@@ -181,13 +188,12 @@ async def download_all_shelf_distances_jsonl(
     service = GraphService(uow_factory)
     try:
         stream = service.stream_all_shelf_distances_jsonl(warehouse_id)
+        filename = f"warehouse_{warehouse_id}_shelf_distances.jsonl"
 
         return StreamingResponse(
             stream,
             media_type="application/jsonl",
-            headers={
-                "Content-Disposition": f'attachment; filename="warehouse_{warehouse_id}_shelf_distances.jsonl"'
-            },
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
         )
-    except WarehouseNotFound as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except WarehouseNotFound as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc

@@ -23,7 +23,7 @@ function WarehousesListPage() {
                 {warehouses.map((wh) => (
                     <li key={wh.id}>
                         <Link to={`/warehouse/${wh.id}`}>{wh.name}</Link>
-                        {typeof wh.floors_count === "number" ? ` — floors: ${wh.floors_count}` : ""}
+                        {typeof wh.floor_count === "number" ? ` — floors: ${wh.floor_count}` : ""}
                     </li>
                 ))}
             </ul>

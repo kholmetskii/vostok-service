@@ -1,5 +1,7 @@
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, Float, Integer, String
+
 from app.infrastructure.db.base import Base
+
 
 class WarehouseModel(Base):
     __tablename__ = "warehouses"

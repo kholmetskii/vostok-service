@@ -1,5 +1,7 @@
-from sqlalchemy import Column, Integer, Float, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, Float, ForeignKey, Integer, UniqueConstraint
+
 from app.infrastructure.db.base import Base
+
 
 class NodeModel(Base):
     __tablename__ = "nodes"
@@ -13,6 +15,4 @@ class NodeModel(Base):
     x_m = Column(Float, nullable=False)
     y_m = Column(Float, nullable=False)
 
-    __table_args__ = (
-        UniqueConstraint("warehouse_id", "ext_id", name="uq_nodes_warehouse_ext"),
-    )
+    __table_args__ = (UniqueConstraint("warehouse_id", "ext_id", name="uq_nodes_warehouse_ext"),)

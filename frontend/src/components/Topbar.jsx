@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import api from "../utils/api"; //
+import api from "../utils/api";
 
 function Topbar({ warehouse }) {
     const navigate = useNavigate();
@@ -13,7 +13,6 @@ function Topbar({ warehouse }) {
         if (!ok) return;
 
         try {
-            // предполагаем эндпоинт DELETE /warehouse/{id} (как у тебя в роутере)
             await api.delete(`/warehouses/${warehouse.id}`);
             navigate("/warehouse");
         } catch (e) {
