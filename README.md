@@ -167,7 +167,7 @@ source .venv/bin/activate
 python -m pip install -r requirements-dev.txt
 ruff check app tests alembic/env.py
 ruff format --check app tests alembic/env.py
-pytest
+python -m pytest
 ```
 
 Frontend:

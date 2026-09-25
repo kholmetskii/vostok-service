@@ -37,7 +37,7 @@ jobs:
           ruff format --check app tests alembic/env.py
 
       - name: Run backend tests
-        run: pytest
+        run: python -m pytest
 
   frontend:
     name: Frontend lint and build
